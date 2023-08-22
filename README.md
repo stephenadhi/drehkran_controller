@@ -1,9 +1,9 @@
 # drehkran_controller
 
-# Gantry Controller
-ROS 2 Package for the gantry show.
+# Drehkran Controller
+ROS 2 Package for the drehkran show.
 
-### 1. SSH into gantry and restart the services
+### 1. SSH into drehkran and restart the services
 
     sudo systemctl restart ec_interface.service ec_control.service ec_loadcell.service urg_node.service
 
