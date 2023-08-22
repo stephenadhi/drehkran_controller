@@ -15,11 +15,9 @@ class DrehkranController(Node):
         self._joint_state_topic = "drehkran/joint_state"
         self._joint_jog_publisher = None
 
-        # JointState in order: [Achse1, Achse2_A, Achse2_B, Achse6, Achse4, Achse5, Achse3, Achse7]
-        self._joint_states = [0.0]*3
-    
-        #  [boom tilt, extension, pitcher, yaw, pitcher extension] 
-        self.max_velocities = [0.0] * 7   #TODO: EFFETIVE MAX VELOCITIES
+        # JointState in order: [Achse1, Achse2, Achse3, Achse4, Achse5, Achse6, Achse7]
+        self._joint_states = [0.0]*7
+        self.max_velocities = [..., ..., ..., ..., ,..., 0.0, 0.0]   #EFFECTIVE MAX VELOCITIES
 
         self._joint_jog_msg = JointJog()
         self._joint_jog_msg.header.frame_id = "JointJog"
@@ -40,13 +38,13 @@ class DrehkranController(Node):
 
         # Define custom values
         self.custom_values = [
-            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, -0.8*MAX, -0.8*MAX, -0.8*MAX, 0.0, 0.0], # Achsen 3, 4, 5 – Heben
+            [0.0, 0.8*MAX, 0.0, 0.0, 0.0, 0.0, 0.0], # Achse 2 – 180°
+            [0.0, 0.0, 0.8*MAX, 0.8*MAX, 0.8*MAX, 0.0, 0.0], # Achse 3, 4, 5 – Senken
+            [0.0, 0.0, -0.8*MAX, -0.8*MAX, -0.8*MAX, 0.0, 0.0], # Achsen 3, 4, 5 – Heben
+            [0.9*MAX, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], # Achse 1 – Vor
+            [0.0, -0.8*MAX, 0.0, 0.0, 0.0, 0.0, 0.0], # Achse 2 – -180°
+            [0.0, 0.0, 0.8*MAX, 0.8*MAX, 0.8*MAX, 0.0, 0.0], # Achse 3, 4, 5 – Senken
         ]
 
         # Set timer for sending joint jog at 50hz
@@ -57,19 +55,38 @@ class DrehkranController(Node):
 
     def timer_callback(self):
         """Sending velocity of the axes at 50Hz"""
+        # If all custom values have been sent, send [0.0, 0.0, 0.0] and stop the timer
+        if self.value_set_counter >= len(self.custom_values):
+            self._send_joint_jog([], [0.0, 0.0, 0.0])
+            self.timer.cancel()
+            return
+
+        # If in pause state, just return
+        if self.is_paused:
+            return
+
         # Send the values based on the current value set counter
-        self._send_joint_jog([], self.custom_values[self.value_set_counter])
+        current_values = self.custom_values[self.value_set_counter]["values"]
+        self._send_joint_jog([], current_values)
 
-        # Increment the high frequency counter
-        self.high_freq_counter += 1
+        # Increment the callback counter
+        self.callback_counter += 1
 
-        # Every X calls (Xs * 50Hz), change the custom values
-        if self.high_freq_counter >= 600:
-            self.high_freq_counter = 0
-            self.value_set_counter += 1
-            # If value set counter exceeds the number of sets of custom values, reset it
-            if self.value_set_counter >= len(self.custom_values):
-                self.value_set_counter = 0
+        # Calculate the number of callbacks for the current set's duration
+        num_callbacks_for_duration = self.custom_values[self.value_set_counter]["duration"] * 50  # 50Hz
+
+        # If it's time to switch to the next set of values
+        if self.callback_counter >= num_callbacks_for_duration:
+            self.callback_counter = 0
+            self.is_paused = True
+            # Pause for 3 seconds
+            self.pause_timer = self.create_timer(3, self.pause_callback)
+
+    def pause_callback(self):
+        """Callback after pause duration"""
+        self.is_paused = False
+        self.value_set_counter += 1
+        self.pause_timer.cancel()
 
     def _send_joint_jog(self, targets, velocities):
         if self._joint_jog_publisher is None:
