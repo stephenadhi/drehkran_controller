@@ -38,13 +38,13 @@ class DrehkranController(Node):
 
         # Define custom values
         self.custom_values = [
-            [0.0, 0.0, -0.8*MAX, -0.8*MAX, -0.8*MAX, 0.0, 0.0], # Achsen 3, 4, 5 – Heben
-            [0.0, 0.8*MAX, 0.0, 0.0, 0.0, 0.0, 0.0], # Achse 2 – 180°
-            [0.0, 0.0, 0.8*MAX, 0.8*MAX, 0.8*MAX, 0.0, 0.0], # Achse 3, 4, 5 – Senken
-            [0.0, 0.0, -0.8*MAX, -0.8*MAX, -0.8*MAX, 0.0, 0.0], # Achsen 3, 4, 5 – Heben
-            [0.9*MAX, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], # Achse 1 – Vor
-            [0.0, -0.8*MAX, 0.0, 0.0, 0.0, 0.0, 0.0], # Achse 2 – -180°
-            [0.0, 0.0, 0.8*MAX, 0.8*MAX, 0.8*MAX, 0.0, 0.0], # Achse 3, 4, 5 – Senken
+            {"values": [0.0, 0.0, -0.8*MAX, -0.8*MAX, -0.8*MAX, 0.0, 0.0], "duration": 24}, # Achsen 3, 4, 5 – Heben
+            {"values": [0.0, 0.8*MAX, 0.0, 0.0, 0.0, 0.0, 0.0], "duration": 24}, # Achse 2 – 180°
+            {"values": [0.0, 0.0, 0.8*MAX, 0.8*MAX, 0.8*MAX, 0.0, 0.0], "duration": 24}, # Achse 3, 4, 5 – Senken
+            {"values": [0.0, 0.0, -0.8*MAX, -0.8*MAX, -0.8*MAX, 0.0, 0.0], "duration": 24}, # Achsen 3, 4, 5 – Heben
+            {"values": [0.9*MAX, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "duration": 24}, # Achse 1 – Vor
+            {"values": [0.0, -0.8*MAX, 0.0, 0.0, 0.0, 0.0, 0.0], "duration": 24}, # Achse 2 – -180°
+            {"values": [0.0, 0.0, 0.8*MAX, 0.8*MAX, 0.8*MAX, 0.0, 0.0], "duration": 24}, # Achse 3, 4, 5 – Senken
         ]
 
         # Set timer for sending joint jog at 50hz
