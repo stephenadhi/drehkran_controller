@@ -54,20 +54,21 @@ class DrehkranController(Node):
 
         self.custom_values = [
             [0.0, 0.0, -1.85, -1.5, 3.85, 0.0, 0.0],
-            [0.0, -10.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, -7.5, 0.0, 0.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, +1.85, +1.5, -3.85, 0.0, 0.0],
             [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, -1.85, -1.5, 3.85, 0.0, 0.0],
-            [0.0, +10.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-            [-65.0, .0, 0.0, 0.0, 0.0, 0.0, 0.0],
-            [0.0, +10.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [65.0, .0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, +7.5, 0.0, 0.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, +1.85, +1.5, -3.85, 0.0, 0.0],
             [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
         ]
 
+        print("Running custom velocity values: ")
         print(self.custom_values)
-
-        self.durations_sec = [20.0, 18.4, 8.0, 3.0, 8.0, 9.2, 20.0, 9.2, 20.0, 5.0]
+        print("Total Duration [s]: ")
+        self.durations_sec = [14.0, 12.26, 6.0, 3.0, 6.0, 19.0, 12.26, 14.0, 5.0]
+        print(sum(self.durations_sec))
         self.moving = False
         # Set timer for sending joint jog at 50hz
         self.timer = self.create_timer(0.05, self.timer_callback)
@@ -76,7 +77,7 @@ class DrehkranController(Node):
         self._register_publishers()
 
         self.time_long = self.node.get_clock().now()
-        print(self.time_long.nanoseconds/1000000000)
+        # print(self.time_long.nanoseconds/1000000000)
         self.time_start_actions[self.i] =  self.time_long.nanoseconds/1000000000
 
     def timer_callback(self):
@@ -84,7 +85,7 @@ class DrehkranController(Node):
         self._send_joint_jog([float(val) for val in self.custom_values[self.i]], self.durations_sec[self.i])
         self.time_long = self.node.get_clock().now()
         time_difference = self.time_long.nanoseconds/1000000000 - self.time_start_actions[self.i]
-        print(time_difference)
+        # print(time_difference)
 
         if time_difference > self.durations_sec[self.i]:
             self.i = self.i +1
